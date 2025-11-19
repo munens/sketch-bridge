@@ -9,6 +9,7 @@ import { DatabaseConfig } from './database-config';
 import { logger } from './middleware';
 import { SessionModule } from './session';
 import { CanvasModule } from './canvas';
+import { AIModule } from './ai';
 
 export class SocketApplication {
 	private knexClient: Knex;
@@ -97,17 +98,23 @@ export class SocketApplication {
 	private initModules(): void {
 		logger.info('📦 Initializing modules...');
 
+		// Initialize AI module first (no dependencies)
+		const aiModule = new AIModule();
+		aiModule.init();
+
+		// Initialize session module
 		const sessionModule = new SessionModule();
 		sessionModule.init(this.knexClient);
 
+		// Initialize canvas module with dependencies
 		const canvasModule = new CanvasModule();
-		canvasModule.init(this.knexClient, sessionModule.service);
+		canvasModule.init(this.knexClient, sessionModule.service, aiModule);
 
 		if (canvasModule.controller) {
 			canvasModule.controller.init(this.io);
 		}
 
-		this.modules = [sessionModule, canvasModule];
+		this.modules = [aiModule, sessionModule, canvasModule];
 	}
 
 	private listen(): void {

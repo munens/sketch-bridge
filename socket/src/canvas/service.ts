@@ -4,10 +4,17 @@ import { Canvas, CanvasObject } from './types';
 import { CanvasNotFoundError, CanvasLimitExceededError } from '../model/errors';
 import { CANVAS_LIMITS } from '../constants';
 import { logSocketSuccess, logSocketError } from '../middleware';
+import { AIService, AIAnalysisResult } from '../ai';
 
 export class CanvasService extends BaseService {
-	constructor(protected readonly repository: CanvasRepository) {
+	private aiService: AIService;
+
+	constructor(
+		protected readonly repository: CanvasRepository,
+		aiService?: AIService
+	) {
 		super(repository);
+		this.aiService = aiService || new AIService();
 	}
 
 	async createCanvas(
@@ -98,6 +105,11 @@ export class CanvasService extends BaseService {
 		logSocketSuccess('Object deleted', { objectId });
 	}
 
+	async clearCanvas(canvasId: string): Promise<void> {
+		await this.repository.deleteAllObjects(canvasId);
+		logSocketSuccess('Canvas cleared', { canvasId });
+	}
+
 	async getCanvasObjects(canvasId: string): Promise<CanvasObject[]> {
 		return await this.repository.getObjectsByCanvasId(canvasId);
 	}
@@ -112,6 +124,43 @@ export class CanvasService extends BaseService {
 		]);
 
 		return { canvas, objects };
+	}
+
+	async analyzeImage(
+		imageBase64: string,
+		onProgress?: (status: string) => void
+	): Promise<AIAnalysisResult> {
+		if (!this.aiService.isAvailable()) {
+			throw new Error('AI Service not configured. Please set OPENAI_API_KEY in environment variables.');
+		}
+
+		// Validate image
+		const validation = this.aiService.validateImage(imageBase64);
+		if (!validation.valid) {
+			throw new Error(validation.error);
+		}
+
+		try {
+			const result = await this.aiService.analyzeImage(imageBase64, onProgress);
+			return result;
+		} catch (error) {
+			logSocketError(error, { operation: 'analyzeImage' });
+			throw error;
+		}
+	}
+
+	/**
+	 * Check if AI analysis is available
+	 */
+	isAIAvailable(): boolean {
+		return this.aiService.isAvailable();
+	}
+
+	/**
+	 * Get available components from AI service
+	 */
+	getAvailableComponents() {
+		return this.aiService.getAvailableComponents();
 	}
 }
 

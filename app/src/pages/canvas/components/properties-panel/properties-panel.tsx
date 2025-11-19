@@ -1,9 +1,9 @@
-import { useCanvas } from '../../context';
+import { useCanvas } from "../../context";
 
 const PropertiesPanel = () => {
   const { objects, selectedObjectId, updateObject, deleteObject } = useCanvas();
-  
-  const selectedObject = objects.find(obj => obj.id === selectedObjectId);
+
+  const selectedObject = objects.find((obj) => obj.id === selectedObjectId);
 
   if (!selectedObject) {
     return (
@@ -15,7 +15,7 @@ const PropertiesPanel = () => {
     );
   }
 
-  const handleUpdate = (field: string, value: any) => {
+  const handleUpdate = (field: string, value: string | number) => {
     updateObject(selectedObject.id, { [field]: value });
   };
 
@@ -24,8 +24,9 @@ const PropertiesPanel = () => {
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-semibold text-black-900">Properties</h3>
         <button
-          onClick={() => deleteObject(selectedObject.id)}
           className="px-3 py-1 bg-token-error text-white text-sm rounded hover:bg-red-600 transition-colors"
+          onClick={() => deleteObject(selectedObject.id)}
+          type="button"
         >
           Delete
         </button>
@@ -47,10 +48,10 @@ const PropertiesPanel = () => {
               X
             </label>
             <input
+              className="w-full px-2 py-1 border border-black-300 rounded text-sm"
+              onChange={(e) => handleUpdate("x", Number(e.target.value))}
               type="number"
               value={Math.round(selectedObject.x)}
-              onChange={e => handleUpdate('x', Number(e.target.value))}
-              className="w-full px-2 py-1 border border-black-300 rounded text-sm"
             />
           </div>
           <div>
@@ -58,10 +59,10 @@ const PropertiesPanel = () => {
               Y
             </label>
             <input
+              className="w-full px-2 py-1 border border-black-300 rounded text-sm"
+              onChange={(e) => handleUpdate("y", Number(e.target.value))}
               type="number"
               value={Math.round(selectedObject.y)}
-              onChange={e => handleUpdate('y', Number(e.target.value))}
-              className="w-full px-2 py-1 border border-black-300 rounded text-sm"
             />
           </div>
         </div>
@@ -72,10 +73,10 @@ const PropertiesPanel = () => {
               Width
             </label>
             <input
+              className="w-full px-2 py-1 border border-black-300 rounded text-sm"
+              onChange={(e) => handleUpdate("width", Number(e.target.value))}
               type="number"
               value={Math.round(selectedObject.width)}
-              onChange={e => handleUpdate('width', Number(e.target.value))}
-              className="w-full px-2 py-1 border border-black-300 rounded text-sm"
             />
           </div>
           <div>
@@ -83,10 +84,10 @@ const PropertiesPanel = () => {
               Height
             </label>
             <input
+              className="w-full px-2 py-1 border border-black-300 rounded text-sm"
+              onChange={(e) => handleUpdate("height", Number(e.target.value))}
               type="number"
               value={Math.round(selectedObject.height)}
-              onChange={e => handleUpdate('height', Number(e.target.value))}
-              className="w-full px-2 py-1 border border-black-300 rounded text-sm"
             />
           </div>
         </div>
@@ -101,10 +102,10 @@ const PropertiesPanel = () => {
               style={{ backgroundColor: selectedObject.fillColor }}
             />
             <input
+              className="flex-1 px-2 py-1 border border-black-300 rounded text-sm font-mono"
+              onChange={(e) => handleUpdate("fillColor", e.target.value)}
               type="text"
               value={selectedObject.fillColor}
-              onChange={e => handleUpdate('fillColor', e.target.value)}
-              className="flex-1 px-2 py-1 border border-black-300 rounded text-sm font-mono"
             />
           </div>
         </div>
@@ -119,10 +120,10 @@ const PropertiesPanel = () => {
               style={{ backgroundColor: selectedObject.strokeColor }}
             />
             <input
+              className="flex-1 px-2 py-1 border border-black-300 rounded text-sm font-mono"
+              onChange={(e) => handleUpdate("strokeColor", e.target.value)}
               type="text"
               value={selectedObject.strokeColor}
-              onChange={e => handleUpdate('strokeColor', e.target.value)}
-              className="flex-1 px-2 py-1 border border-black-300 rounded text-sm font-mono"
             />
           </div>
         </div>
@@ -132,12 +133,14 @@ const PropertiesPanel = () => {
             Stroke Width
           </label>
           <input
-            type="number"
-            min="1"
-            max="20"
-            value={selectedObject.strokeWidth}
-            onChange={e => handleUpdate('strokeWidth', Number(e.target.value))}
             className="w-full px-2 py-1 border border-black-300 rounded text-sm"
+            max="20"
+            min="1"
+            onChange={(e) =>
+              handleUpdate("strokeWidth", Number(e.target.value))
+            }
+            type="number"
+            value={selectedObject.strokeWidth}
           />
         </div>
 
@@ -146,13 +149,13 @@ const PropertiesPanel = () => {
             Opacity
           </label>
           <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={selectedObject.opacity}
-            onChange={e => handleUpdate('opacity', Number(e.target.value))}
             className="w-full"
+            max="1"
+            min="0"
+            onChange={(e) => handleUpdate("opacity", Number(e.target.value))}
+            step="0.1"
+            type="range"
+            value={selectedObject.opacity}
           />
           <div className="text-xs text-black-600 text-right">
             {Math.round(selectedObject.opacity * 100)}%
@@ -165,16 +168,22 @@ const PropertiesPanel = () => {
           </div>
           <div className="bg-black-100 rounded p-3 space-y-1">
             <div className="text-xs">
-              <span className="text-black-600">Fill:</span>{' '}
-              <span className="font-mono text-black-900">{selectedObject.fillColor}</span>
+              <span className="text-black-600">Fill:</span>{" "}
+              <span className="font-mono text-black-900">
+                {selectedObject.fillColor}
+              </span>
             </div>
             <div className="text-xs">
-              <span className="text-black-600">Stroke:</span>{' '}
-              <span className="font-mono text-black-900">{selectedObject.strokeColor}</span>
+              <span className="text-black-600">Stroke:</span>{" "}
+              <span className="font-mono text-black-900">
+                {selectedObject.strokeColor}
+              </span>
             </div>
             <div className="text-xs">
-              <span className="text-black-600">Width:</span>{' '}
-              <span className="font-mono text-black-900">{selectedObject.strokeWidth}px</span>
+              <span className="text-black-600">Width:</span>{" "}
+              <span className="font-mono text-black-900">
+                {selectedObject.strokeWidth}px
+              </span>
             </div>
           </div>
         </div>
@@ -184,4 +193,3 @@ const PropertiesPanel = () => {
 };
 
 export default PropertiesPanel;
-

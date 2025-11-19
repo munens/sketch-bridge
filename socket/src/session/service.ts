@@ -67,6 +67,23 @@ export class SessionService extends BaseService {
 		}
 	}
 
+	async getUserSessionsFromCanvas(userId: string, canvasId: string): Promise<Session[]> {
+		return await this.repository.getUserSessionsFromCanvas(userId, canvasId);
+	}
+
+	async deleteUserSessionsFromCanvas(userId: string, canvasId: string): Promise<number> {
+		try {
+			const deletedCount = await this.repository.deleteUserSessionsFromCanvas(userId, canvasId);
+			if (deletedCount > 0) {
+				logSocketSuccess('User sessions deleted from canvas', { userId, canvasId, count: deletedCount });
+			}
+			return deletedCount;
+		} catch (error) {
+			logSocketError(error, { operation: 'deleteUserSessionsFromCanvas', userId, canvasId });
+			throw error;
+		}
+	}
+
 	private startCleanupTask(): void {
 		this.cleanupInterval = setInterval(async () => {
 			try {

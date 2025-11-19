@@ -1,7 +1,10 @@
-export { CanvasRenderer } from './canvas-renderer';
-export { Toolbar } from './toolbar';
-export { PropertiesPanel } from './properties-panel';
-export { ViewportControls } from './viewport-controls';
-export { RemoteCursors } from './remote-cursors';
-export { ConnectionStatus } from './connection-status';
-
+export { CanvasRenderer } from "./canvas-renderer";
+export { Toolbar } from "./toolbar";
+export { PropertiesPanel } from "./properties-panel";
+export { ViewportControls } from "./viewport-controls";
+export { RemoteCursors } from "./remote-cursors";
+export { ConnectionStatus } from "./connection-status";
+export { default as ComponentSuggestionPanel } from "./component-suggestion-panel";
+export { default as ComponentPreviewPanel } from "./component-preview-panel";
+export { AIAnalyzerPanel } from "./ai-analyzer-panel";
+export { ContextMenu } from "./context-menu";

@@ -1,2 +1,1 @@
-export { default as CanvasRenderer } from './canvas-renderer';
-
+export { default as CanvasRenderer } from "./canvas-renderer";

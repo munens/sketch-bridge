@@ -2,7 +2,14 @@
   "name": "@sketch-bridge/common",
   "version": "1.0.0",
   "description": "A common folder for sharing code between cheza-cheza clients and APIs",
-  "main": "index.js",
+  "type": "module",
+  "main": "./model/index.ts",
+  "types": "./model/index.ts",
+  "exports": {
+    ".": "./model/index.ts",
+    "./model": "./model/index.ts",
+    "./model/*": "./model/*.ts"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

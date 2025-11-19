@@ -101,6 +101,29 @@ export class SessionRepository extends BaseRepository {
 		}
 	}
 
+	async getUserSessionsFromCanvas(userId: string, canvasId: string): Promise<Session[]> {
+		try {
+			const records = await this.knexClient<SessionRecord>(this.tableName)
+				.where({ user_id: userId, canvas_id: canvasId });
+			return records.map(record => this.mapRecordToSession(record));
+		} catch (error) {
+			logSocketError(error, { operation: 'getUserSessionsFromCanvas', userId, canvasId });
+			throw error;
+		}
+	}
+
+	async deleteUserSessionsFromCanvas(userId: string, canvasId: string): Promise<number> {
+		try {
+			const deletedCount = await this.knexClient<SessionRecord>(this.tableName)
+				.where({ user_id: userId, canvas_id: canvasId })
+				.delete();
+			return deletedCount;
+		} catch (error) {
+			logSocketError(error, { operation: 'deleteUserSessionsFromCanvas', userId, canvasId });
+			throw error;
+		}
+	}
+
 	async deleteExpiredSessions(expirationTimeMs: number): Promise<number> {
 		try {
 			if (expirationTimeMs === 0) {

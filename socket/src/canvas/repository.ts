@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 import { BaseRepository } from '../model/base';
 import { Canvas, CanvasObject, CanvasObjectRecord, CanvasRecord } from './types';
-import { logSocketError } from '../middleware';
+import { logSocketError, logSocketSuccess } from '../middleware';
 
 export class CanvasRepository extends BaseRepository {
 	private readonly canvasTableName = 'canvases';
@@ -48,6 +48,13 @@ export class CanvasRepository extends BaseRepository {
 
 	async addObject(object: CanvasObject): Promise<CanvasObject> {
 		try {
+			console.log('[Canvas Repository] Adding object:', {
+				id: object.id,
+				type: object.type,
+				hasImageData: !!(object as any).imageData,
+				imageDataLength: (object as any).imageData?.length || 0
+			});
+
 			const [record] = await this.knexClient<CanvasObjectRecord>(this.objectsTableName)
 				.insert({
 					id: object.id,
@@ -65,6 +72,7 @@ export class CanvasRepository extends BaseRepository {
 					path_data: object.pathData,
 					text_content: object.textContent,
 					font_size: object.fontSize,
+					image_data: (object as any).imageData,  // Save base64 image data
 					z_index: object.zIndex,
 					created_by: object.createdBy,
 					created_at: new Date(object.createdAt),
@@ -72,7 +80,13 @@ export class CanvasRepository extends BaseRepository {
 				})
 				.returning('*');
 
-			return this.mapObjectRecordToObject(record);
+			const mappedObject = this.mapObjectRecordToObject(record);
+			console.log('[Canvas Repository] Object saved and mapped:', {
+				id: mappedObject.id,
+				hasImageData: !!(mappedObject as any).imageData
+			});
+
+			return mappedObject;
 		} catch (error) {
 			logSocketError(error, { operation: 'addObject', objectId: object.id });
 			throw error;
@@ -96,6 +110,7 @@ export class CanvasRepository extends BaseRepository {
 			if (updates.pathData !== undefined) updateData.path_data = updates.pathData;
 			if (updates.textContent !== undefined) updateData.text_content = updates.textContent;
 			if (updates.fontSize !== undefined) updateData.font_size = updates.fontSize;
+			if ((updates as any).imageData !== undefined) updateData.image_data = (updates as any).imageData;
 
 			const [record] = await this.knexClient<CanvasObjectRecord>(this.objectsTableName)
 				.where({ id: objectId })
@@ -116,6 +131,19 @@ export class CanvasRepository extends BaseRepository {
 				.delete();
 		} catch (error) {
 			logSocketError(error, { operation: 'deleteObject', objectId });
+			throw error;
+		}
+	}
+
+	async deleteAllObjects(canvasId: string): Promise<void> {
+		try {
+			const deletedCount = await this.knexClient<CanvasObjectRecord>(this.objectsTableName)
+				.where({ canvas_id: canvasId })
+				.delete();
+
+			logSocketSuccess('All objects deleted from canvas', { canvasId, count: deletedCount });
+		} catch (error) {
+			logSocketError(error, { operation: 'deleteAllObjects', canvasId });
 			throw error;
 		}
 	}
@@ -161,7 +189,7 @@ export class CanvasRepository extends BaseRepository {
 	}
 
 	private mapObjectRecordToObject(record: CanvasObjectRecord): CanvasObject {
-		return {
+		const obj: any = {
 			id: record.id,
 			canvasId: record.canvas_id,
 			type: record.type as any,
@@ -182,6 +210,13 @@ export class CanvasRepository extends BaseRepository {
 			createdAt: new Date(record.created_at).getTime(),
 			updatedAt: new Date(record.updated_at).getTime()
 		};
+
+		// Include imageData if present
+		if (record.image_data) {
+			obj.imageData = record.image_data;
+		}
+
+		return obj;
 	}
 }
 

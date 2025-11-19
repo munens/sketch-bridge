@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "ESNext",
     "esModuleInterop": true,
-    "target": "es6",
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "moduleResolution": "bundler",
     "sourceMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "strict": false
   },
-  "lib": ["es2021"],
+  "lib": ["ES2022"],
   "exclude": [
     "./scripts"
   ]

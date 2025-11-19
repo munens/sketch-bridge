@@ -1,4 +1,9 @@
-export { Point, CanvasObject, Canvas, Session } from '@sketch-bridge/common/model';
+export {
+  Point,
+  CanvasObject,
+  Canvas,
+  Session,
+} from "@sketch-bridge/common/model";
 
 export interface DrawingState {
   isDrawing: boolean;
@@ -6,4 +11,3 @@ export interface DrawingState {
   currentPoint: Point | null;
   currentPath: Point[];
 }
-

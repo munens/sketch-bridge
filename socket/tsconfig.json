@@ -10,6 +10,7 @@
     "strict": false,
     "baseUrl": ".",
     "paths": {
+      "@sketch-bridge/common/model": ["../common/model/index.ts"],
       "@sketch-bridge/common/*": ["../common/*"]
     }
   },

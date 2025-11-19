@@ -1,2 +1,1 @@
-export { default as PropertiesPanel } from './properties-panel';
-
+export { default as PropertiesPanel } from "./properties-panel";

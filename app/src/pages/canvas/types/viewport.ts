@@ -10,4 +10,3 @@ export interface ViewportBounds {
   maxX: number;
   maxY: number;
 }
-

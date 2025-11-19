@@ -7,9 +7,15 @@ export const SOCKET_EVENTS = {
 	OBJECT_ADD: 'object_add',
 	OBJECT_UPDATE: 'object_update',
 	OBJECT_DELETE: 'object_delete',
+	CLEAR_CANVAS: 'clear_canvas',
 	CANVAS_SYNC: 'canvas_sync',
 	USER_JOINED: 'user_joined',
 	USER_LEFT: 'user_left',
+	// AI Analysis events
+	AI_ANALYZE: 'ai_analyze',
+	AI_PROGRESS: 'ai_progress',
+	AI_RESULT: 'ai_result',
+	AI_ERROR: 'ai_error',
 	ERROR: 'error'
 } as const;
 

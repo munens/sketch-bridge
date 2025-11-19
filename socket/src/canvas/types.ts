@@ -1,4 +1,4 @@
-export { Point, CanvasObject, Canvas, Session } from '@sketch-bridge/common/model';
+export type { Point, CanvasObject, Canvas, Session } from '../../../common/model';
 
 export interface CanvasObjectRecord {
 	id: string;
@@ -16,6 +16,7 @@ export interface CanvasObjectRecord {
 	path_data?: string;
 	text_content?: string;
 	font_size?: number;
+	image_data?: string;  // Base64 image data
 	z_index: number;
 	created_by: string;
 	created_at: Date;

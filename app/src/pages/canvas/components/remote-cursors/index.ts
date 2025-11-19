@@ -1,2 +1,1 @@
-export { default as RemoteCursors } from './remote-cursors';
-
+export { default as RemoteCursors } from "./remote-cursors";

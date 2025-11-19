@@ -2,6 +2,22 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Panel, Layout } from "../../components";
 
+const FeatureItem = ({ children }: { children: string }) => <li>{children}</li>;
+
+const FeaturesList = () => (
+  <div className="pt-4 border-t border-black-300">
+    <p className="text-sm text-black-600 mb-2">Features:</p>
+    <ul className="text-sm text-black-600 space-y-1">
+      <FeatureItem>
+        • Draw with rectangles, circles, and freehand paths
+      </FeatureItem>
+      <FeatureItem>• Infinite canvas with pan and zoom</FeatureItem>
+      <FeatureItem>• Design token-based colors</FeatureItem>
+      <FeatureItem>• Real-time property editing</FeatureItem>
+    </ul>
+  </div>
+);
+
 const Start = () => {
   const navigate = useNavigate();
 
@@ -18,23 +34,16 @@ const Start = () => {
                 Design-to-code collaboration platform
               </p>
             </div>
-            
+
             <button
-              onClick={() => navigate('/canvas')}
               className="w-full px-6 py-3 bg-token-primary text-white rounded-lg hover:bg-token-primary-dark transition-colors font-medium"
+              onClick={() => navigate("/canvas")}
+              type="button"
             >
               Open Canvas
             </button>
 
-            <div className="pt-4 border-t border-black-300">
-              <p className="text-sm text-black-600 mb-2">Features:</p>
-              <ul className="text-sm text-black-600 space-y-1">
-                <li>• Draw with rectangles, circles, and freehand paths</li>
-                <li>• Infinite canvas with pan and zoom</li>
-                <li>• Design token-based colors</li>
-                <li>• Real-time property editing</li>
-              </ul>
-            </div>
+            <FeaturesList />
           </div>
         </Panel>
       </div>

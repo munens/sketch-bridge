@@ -1,9 +1,0 @@
-.idea
-.env
-coverage
-dist
-node_modules
-logs/
-
-.specstory
-.cursorindexingignore

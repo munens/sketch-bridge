@@ -1,4 +1,4 @@
-export type ToolType = 'select' | 'rect' | 'circle' | 'path' | 'pan' | 'text';
+export type ToolType = "select" | "rect" | "circle" | "path" | "pan" | "text";
 
 export interface ToolOptions {
   fillColor: string;
@@ -10,4 +10,3 @@ export interface Tool {
   type: ToolType;
   options: ToolOptions;
 }
-

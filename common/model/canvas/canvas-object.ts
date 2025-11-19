@@ -1,7 +1,7 @@
 export interface CanvasObject {
   id: string;
   canvasId: string;
-  type: 'rect' | 'circle' | 'path' | 'text';
+  type: 'rect' | 'circle' | 'path' | 'text' | 'image';
   x: number;
   y: number;
   width: number;
@@ -14,6 +14,7 @@ export interface CanvasObject {
   pathData?: string;
   textContent?: string;
   fontSize?: number;
+  imageData?: string; // Base64 image data
   zIndex: number;
   createdBy: string;
   createdAt: number;

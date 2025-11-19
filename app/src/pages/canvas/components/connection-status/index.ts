@@ -1,2 +1,1 @@
-export { default as ConnectionStatus } from './connection-status';
-
+export { default as ConnectionStatus } from "./connection-status";

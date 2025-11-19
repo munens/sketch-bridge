@@ -1,10 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -24,31 +21,31 @@ export default {
         // Design Token Colors (matching our sketch system)
         token: {
           primary: {
-            light: '#3B82F6',
-            DEFAULT: '#2563EB',
-            dark: '#1D4ED8',
+            light: "#3B82F6",
+            DEFAULT: "#2563EB",
+            dark: "#1D4ED8",
           },
-          success: '#10B981',
-          warning: '#F59E0B',
-          error: '#EF4444',
+          success: "#10B981",
+          warning: "#F59E0B",
+          error: "#EF4444",
         },
       },
       cursor: {
-        'crosshair': 'crosshair',
-        'grab': 'grab',
-        'grabbing': 'grabbing',
+        crosshair: "crosshair",
+        grab: "grab",
+        grabbing: "grabbing",
       },
       boxShadow: {
-        'token': '0 0 0 2px rgba(59, 130, 246, 0.2)',
+        token: "0 0 0 2px rgba(59, 130, 246, 0.2)",
       },
       keyframes: {
-        'pulse-border': {
-          '0%, 100%': { borderColor: 'rgba(59, 130, 246, 0.5)' },
-          '50%': { borderColor: 'rgba(59, 130, 246, 1)' },
+        "pulse-border": {
+          "0%, 100%": { borderColor: "rgba(59, 130, 246, 0.5)" },
+          "50%": { borderColor: "rgba(59, 130, 246, 1)" },
         },
       },
       animation: {
-        'pulse-border': 'pulse-border 2s ease-in-out infinite',
+        "pulse-border": "pulse-border 2s ease-in-out infinite",
       },
     },
   },

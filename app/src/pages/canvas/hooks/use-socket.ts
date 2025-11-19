@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import { useCanvas } from "../context";
 import { CanvasObject, Session } from "../types";
 
-const SOCKET_URL = "http://localhost:3001";
+const socketUrl = "http://localhost:3001";
 
 export const useSocket = (
   canvasId: string,
@@ -23,12 +23,12 @@ export const useSocket = (
   } = useCanvas();
 
   useEffect(() => {
-    console.log("[Socket] Attempting to connect to:", SOCKET_URL);
+    console.log("[Socket] Attempting to connect to:", socketUrl);
     console.log("[Socket] Canvas ID:", canvasId);
     console.log("[Socket] User ID:", userId);
     console.log("[Socket] User Name:", userName);
 
-    const socket = io(SOCKET_URL, {
+    const socket = io(socketUrl, {
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionDelay: 1000,
@@ -70,11 +70,21 @@ export const useSocket = (
 
     socket.on(
       "canvas_sync",
-      (data: { canvas: any; objects: CanvasObject[]; sessions: Session[] }) => {
-        console.log("[Socket] Received canvas_sync:", {
+      (data: {
+        canvas: unknown;
+        objects: CanvasObject[];
+        sessions: Session[];
+      }) => {
+        console.log("[Socket] ⚠️ Received canvas_sync - THIS REPLACES ALL OBJECTS:", {
           objectCount: data.objects.length,
           sessionCount: data.sessions.length,
+          objectDetails: data.objects.map(o => ({ 
+            id: o.id, 
+            type: o.type,
+            hasImageData: !!(o as any).imageData 
+          }))
         });
+        console.log("[Socket] Current objects before sync:", objects.length);
         setObjects(data.objects);
         setRemoteSessions(data.sessions.filter((s) => s.id !== socket.id));
       },
@@ -106,9 +116,18 @@ export const useSocket = (
     socket.on(
       "object_add",
       (data: { object: CanvasObject; sessionId: string }) => {
+        console.log("[Socket] Received object_add event:", {
+          objectId: data.object.id,
+          objectType: data.object.type,
+          fromSessionId: data.sessionId,
+          mySessionId: socket.id,
+          willAdd: data.sessionId !== socket.id
+        });
         if (data.sessionId !== socket.id) {
-          console.log("[Socket] Received object_add:", data.object.id);
+          console.log("[Socket] Adding object from another user:", data.object.id);
           addObject(data.object, true);
+        } else {
+          console.log("[Socket] Ignoring own object_add event");
         }
       },
     );
@@ -134,6 +153,14 @@ export const useSocket = (
       },
     );
 
+    socket.on("clear_canvas", (data: { sessionId: string }) => {
+      if (data.sessionId !== socket.id) {
+        console.log("[Socket] Received clear_canvas");
+        setObjects([]);
+        selectObject(null);
+      }
+    });
+
     socket.on("error", (error: { message: string; code: string }) => {
       console.error("Socket error:", error);
     });
@@ -153,14 +180,6 @@ export const useSocket = (
     setObjects,
   ]);
 
-  useEffect(() => {
-    setEmitCallbacks({
-      onObjectAdd: emitObjectAdd,
-      onObjectUpdate: emitObjectUpdate,
-      onObjectDelete: emitObjectDelete,
-    });
-  }, [setEmitCallbacks]);
-
   const emitCursorMove = (x: number, y: number) => {
     if (socketRef.current?.connected) {
       socketRef.current.emit("cursor_move", {
@@ -174,11 +193,14 @@ export const useSocket = (
   const emitObjectAdd = useCallback(
     (object: CanvasObject) => {
       if (socketRef.current?.connected) {
-        console.log("[Socket] Emitting object_add:", object.id);
+        console.log("[Socket] Emitting object_add:", object.id, 'type:', object.type);
+        console.log("[Socket] Object data:", JSON.stringify(object).substring(0, 200));
         socketRef.current.emit("object_add", {
           canvasId,
           object,
         });
+      } else {
+        console.error("[Socket] Cannot emit - socket not connected!");
       }
     },
     [canvasId],
@@ -211,12 +233,38 @@ export const useSocket = (
     [canvasId],
   );
 
+  const emitClearCanvas = useCallback(() => {
+    if (socketRef.current?.connected) {
+      console.log("[Socket] Emitting clear_canvas");
+      socketRef.current.emit("clear_canvas", {
+        canvasId,
+      });
+    }
+  }, [canvasId]);
+
+  useEffect(() => {
+    setEmitCallbacks({
+      onObjectAdd: emitObjectAdd,
+      onObjectUpdate: emitObjectUpdate,
+      onObjectDelete: emitObjectDelete,
+      onClearCanvas: emitClearCanvas,
+    });
+  }, [
+    setEmitCallbacks,
+    emitObjectAdd,
+    emitObjectUpdate,
+    emitObjectDelete,
+    emitClearCanvas,
+  ]);
+
   return {
+    socket: socketRef.current,
     isConnected,
     remoteSessions,
     emitCursorMove,
     emitObjectAdd,
     emitObjectUpdate,
     emitObjectDelete,
+    emitClearCanvas,
   };
 };
