@@ -146,12 +146,24 @@ export class CanvasController extends BaseController {
 
 	private async handleObjectAdd(
 		socket: Socket,
-		data: { canvasId: string; object: CanvasObject }
+		data: { canvasId: string; object: any }
 	): Promise<void> {
 		try {
 			const { canvasId, object } = data;
 
-			const addedObject = await this.service.addObject(object);
+			const session = await this.sessionService.getSessionById(socket.id);
+			if (!session) {
+				throw new Error('Session not found');
+			}
+
+			const objectWithMeta = {
+				...object,
+				canvasId,
+				createdBy: session.userId,
+				updatedAt: Date.now()
+			};
+
+			const addedObject = await this.service.addObject(objectWithMeta);
 
 			this.io.to(canvasId).emit(SOCKET_EVENTS.OBJECT_ADD, {
 				object: addedObject,
@@ -170,12 +182,17 @@ export class CanvasController extends BaseController {
 
 	private async handleObjectUpdate(
 		socket: Socket,
-		data: { canvasId: string; objectId: string; updates: Partial<CanvasObject> }
+		data: { canvasId: string; objectId: string; updates: any }
 	): Promise<void> {
 		try {
 			const { canvasId, objectId, updates } = data;
 
-			const updatedObject = await this.service.updateObject(objectId, updates);
+			const updatesWithMeta = {
+				...updates,
+				updatedAt: Date.now()
+			};
+
+			const updatedObject = await this.service.updateObject(objectId, updatesWithMeta);
 
 			this.io.to(canvasId).emit(SOCKET_EVENTS.OBJECT_UPDATE, {
 				object: updatedObject,

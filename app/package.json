@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
+    "@sketch-bridge/common": "file:../common",
     "@tanstack/react-query": "^5.56.2",
     "axios": "^1.7.7",
     "classnames": "^2.5.1",
