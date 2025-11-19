@@ -12,9 +12,9 @@
 
 See Sketch Bridge in action:
 
-[![Sketch Bridge Demo](https://img.youtube.com/vi/aWVMvQ_jyV0/maxresdefault.jpg)](https://youtu.be/aWVMvQ_jyV0)
+[![Sketch Bridge Demo](https://img.youtube.com/vi/GEh4CiQKOHw/maxresdefault.jpg)](https://youtu.be/GEh4CiQKOHw)
 
-**[▶️ Watch Demo Video](https://youtu.be/aWVMvQ_jyV0)**
+**[▶️ Watch Demo Video](https://youtu.be/GEh4CiQKOHw)**
 
 ---
 
