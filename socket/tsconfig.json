@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "moduleResolution": "bundler",
+    "sourceMap": true,
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "strict": false
+  },
+  "lib": ["ES2022"],
+  "exclude": [
+    "./scripts"
+  ]
+}
+
