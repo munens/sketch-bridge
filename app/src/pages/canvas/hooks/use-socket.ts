@@ -13,7 +13,20 @@ export const useSocket = (
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [remoteSessions, setRemoteSessions] = useState<Session[]>([]);
+
+  // Debug: Track remote sessions changes
+  useEffect(() => {
+    console.log('[Socket] 👥 Remote sessions state changed:', {
+      count: remoteSessions.length,
+      users: remoteSessions.map(s => ({ 
+        id: s.id, 
+        userId: s.userId, 
+        userName: s.userName 
+      }))
+    });
+  }, [remoteSessions]);
   const {
+    objects,
     addObject,
     updateObject,
     deleteObject,
@@ -21,6 +34,29 @@ export const useSocket = (
     setObjects,
     setEmitCallbacks,
   } = useCanvas();
+
+  // Use refs to store the latest callback functions
+  // This prevents the socket useEffect from re-running when callbacks change
+  const callbacksRef = useRef({
+    addObject,
+    updateObject,
+    deleteObject,
+    selectObject,
+    setObjects,
+    setRemoteSessions,
+  });
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    callbacksRef.current = {
+      addObject,
+      updateObject,
+      deleteObject,
+      selectObject,
+      setObjects,
+      setRemoteSessions,
+    };
+  }, [addObject, updateObject, deleteObject, selectObject, setObjects, setRemoteSessions]);
 
   useEffect(() => {
     console.log("[Socket] Attempting to connect to:", socketUrl);
@@ -38,7 +74,8 @@ export const useSocket = (
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("[Socket] Connected successfully! Socket ID:", socket.id);
+      console.log("[Socket] 🔵 Connected successfully! Socket ID:", socket.id);
+      console.log("[Socket] 🔵 My userId:", userId, "userName:", userName);
       setIsConnected(true);
 
       socket.emit("join_canvas", {
@@ -46,7 +83,7 @@ export const useSocket = (
         userId,
         userName,
       });
-      console.log("[Socket] Emitted join_canvas event");
+      console.log("[Socket] 📤 Emitted join_canvas event");
     });
 
     socket.on("connect_error", (error) => {
@@ -85,25 +122,52 @@ export const useSocket = (
           }))
         });
         console.log("[Socket] Current objects before sync:", objects.length);
-        setObjects(data.objects);
-        setRemoteSessions(data.sessions.filter((s) => s.id !== socket.id));
+        console.log("[Socket] 👥 Sessions from canvas_sync:", {
+          total: data.sessions.length,
+          mySocketId: socket.id,
+          allSessions: data.sessions.map(s => ({ 
+            id: s.id, 
+            userId: s.userId, 
+            userName: s.userName 
+          })),
+          afterFilter: data.sessions.filter((s) => s.id !== socket.id).length
+        });
+        callbacksRef.current.setObjects(data.objects);
+        const filteredSessions = data.sessions.filter((s) => s.id !== socket.id);
+        console.log("[Socket] 👥 Setting remote sessions to:", filteredSessions.length);
+        callbacksRef.current.setRemoteSessions(filteredSessions);
       },
     );
 
     socket.on("user_joined", (data: { session: Session }) => {
+      console.log("[Socket] 👥 USER_JOINED event:", {
+        newUser: data.session.userName,
+        newSessionId: data.session.id,
+        isMe: data.session.id === socket.id
+      });
       if (data.session.id !== socket.id) {
-        setRemoteSessions((prev) => [...prev, data.session]);
+        callbacksRef.current.setRemoteSessions((prev) => {
+          console.log("[Socket] 👥 Adding user to remote sessions. Before:", prev.length, "After:", prev.length + 1);
+          return [...prev, data.session];
+        });
+      } else {
+        console.log("[Socket] 👥 Ignoring USER_JOINED for myself");
       }
     });
 
     socket.on("user_left", (data: { sessionId: string }) => {
-      setRemoteSessions((prev) => prev.filter((s) => s.id !== data.sessionId));
+      console.log("[Socket] 👥 USER_LEFT event:", data.sessionId);
+      callbacksRef.current.setRemoteSessions((prev) => {
+        const filtered = prev.filter((s) => s.id !== data.sessionId);
+        console.log("[Socket] 👥 Removing user. Before:", prev.length, "After:", filtered.length);
+        return filtered;
+      });
     });
 
     socket.on(
       "cursor_move",
       (data: { sessionId: string; x: number; y: number }) => {
-        setRemoteSessions((prev) =>
+        callbacksRef.current.setRemoteSessions((prev) =>
           prev.map((session) =>
             session.id === data.sessionId
               ? { ...session, cursorX: data.x, cursorY: data.y }
@@ -125,7 +189,7 @@ export const useSocket = (
         });
         if (data.sessionId !== socket.id) {
           console.log("[Socket] Adding object from another user:", data.object.id);
-          addObject(data.object, true);
+          callbacksRef.current.addObject(data.object, true);
         } else {
           console.log("[Socket] Ignoring own object_add event");
         }
@@ -137,7 +201,7 @@ export const useSocket = (
       (data: { object: CanvasObject; sessionId: string }) => {
         if (data.sessionId !== socket.id) {
           console.log("[Socket] Received object_update:", data.object.id);
-          updateObject(data.object.id, data.object, true);
+          callbacksRef.current.updateObject(data.object.id, data.object, true);
         }
       },
     );
@@ -147,17 +211,17 @@ export const useSocket = (
       (data: { objectId: string; sessionId: string }) => {
         if (data.sessionId !== socket.id) {
           console.log("[Socket] Received object_delete:", data.objectId);
-          deleteObject(data.objectId, true);
-          selectObject(null);
+          callbacksRef.current.deleteObject(data.objectId, true);
+          callbacksRef.current.selectObject(null);
         }
       },
     );
 
     socket.on("clear_canvas", (data: { sessionId: string }) => {
       if (data.sessionId !== socket.id) {
-        console.log("[Socket] Received clear_canvas");
-        setObjects([]);
-        selectObject(null);
+        console.log("[Socket] Received clear_canvas from another user");
+        callbacksRef.current.setObjects([]);
+        callbacksRef.current.selectObject(null);
       }
     });
 
@@ -166,19 +230,23 @@ export const useSocket = (
     });
 
     return () => {
-      socket.emit("leave_canvas", { canvasId });
+      console.log("[Socket] Disconnecting socket...");
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("canvas_sync");
+      socket.off("user_joined");
+      socket.off("user_left");
+      socket.off("cursor_move");
+      socket.off("object_add");
+      socket.off("object_update");
+      socket.off("object_delete");
+      socket.off("clear_canvas");
       socket.disconnect();
     };
-  }, [
-    canvasId,
-    userId,
-    userName,
-    addObject,
-    updateObject,
-    deleteObject,
-    selectObject,
-    setObjects,
-  ]);
+    // IMPORTANT: Only re-run this effect if connection params change
+    // Callback functions (addObject, setObjects, etc.) are accessed via callbacksRef
+    // so they DON'T trigger reconnection when they change
+  }, [canvasId, userId, userName]);
 
   const emitCursorMove = (x: number, y: number) => {
     if (socketRef.current?.connected) {

@@ -76,15 +76,36 @@ export class CanvasController extends BaseController {
 			// Ensure the canvas exists (create if it doesn't)
 			await this.service.getOrCreateCanvas(canvasId, userId, canvasName);
 
+			console.log('[Controller] 🔵 JOIN CANVAS START:', {
+				socketId: socket.id,
+				userId,
+				userName,
+				canvasId
+			});
+
 			// Clean up any existing sessions for this user on this canvas
 			// This handles cases where the user refreshed the page or had a stale connection
 			const oldSessions = await this.sessionService.getUserSessionsFromCanvas(userId, canvasId);
+			
+			console.log('[Controller] 🟡 Checking for old sessions:', {
+				userId,
+				oldSessionCount: oldSessions.length,
+				oldSessionIds: oldSessions.map(s => s.id),
+				currentSocketId: socket.id
+			});
+
 			if (oldSessions.length > 0) {
+				console.log('[Controller] 🔴 DELETING OLD SESSIONS FOR USER:', {
+					userId,
+					sessionsBeingDeleted: oldSessions.map(s => ({ id: s.id, userId: s.userId }))
+				});
+
 				// Delete old sessions from database
 				await this.sessionService.deleteUserSessionsFromCanvas(userId, canvasId);
 				
 				// Notify other users that each old session is gone
 				for (const oldSession of oldSessions) {
+					console.log('[Controller] 📢 Emitting USER_LEFT for old session:', oldSession.id);
 					this.io.to(canvasId).emit(SOCKET_EVENTS.USER_LEFT, {
 						sessionId: oldSession.id
 					});
@@ -96,6 +117,12 @@ export class CanvasController extends BaseController {
 					count: oldSessions.length 
 				});
 			}
+
+			console.log('[Controller] 🟢 Creating new session:', {
+				socketId: socket.id,
+				userId,
+				userName
+			});
 
 			const session = await this.sessionService.createSession({
 				id: socket.id,
@@ -113,10 +140,33 @@ export class CanvasController extends BaseController {
 			const canvasData = await this.service.syncCanvas(canvasId);
 			const activeSessions = await this.sessionService.getActiveSessionsByCanvas(canvasId);
 
+			console.log('[Controller] 👥 Active sessions AFTER creating new session:', {
+				canvasId,
+				sessionCount: activeSessions.length,
+				sessions: activeSessions.map(s => ({ 
+					id: s.id, 
+					userId: s.userId, 
+					userName: s.userName 
+				})),
+				currentSocketId: socket.id
+			});
+
+			console.log('[Controller] 📤 Sending CANVAS_SYNC to:', socket.id, {
+				objectCount: canvasData.objects.length,
+				sessionCount: activeSessions.length
+			});
+
 			socket.emit(SOCKET_EVENTS.CANVAS_SYNC, {
 				canvas: canvasData.canvas,
 				objects: canvasData.objects,
 				sessions: activeSessions
+			});
+
+			console.log('[Controller] 📢 Broadcasting USER_JOINED to room:', {
+				newUser: userName,
+				newSessionId: socket.id,
+				roomSize: this.io.sockets.adapter.rooms.get(canvasId)?.size || 0,
+				sessionData: { id: session.id, userId: session.userId, userName: session.userName }
 			});
 
 			socket.to(canvasId).emit(SOCKET_EVENTS.USER_JOINED, {
