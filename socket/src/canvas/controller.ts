@@ -105,7 +105,8 @@ export class CanvasController extends BaseController {
 				cursorX: 0,
 				cursorY: 0,
 				color: this.generateUserColor(userId),
-				connectedAt: Date.now()
+			connectedAt: Date.now(),
+			lastActivity: Date.now()
 			});
 
 			await socket.join(canvasId);

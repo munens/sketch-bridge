@@ -1,9 +1,13 @@
 export interface DatabaseConfig {
-	database: string;
-	user: string;
-	password: string;
-	host: string;
-	port: number;
-	ssl: boolean;
+	// Support for connection string (Railway default)
+	connectionString?: string;
+	
+	// Support for individual credentials (local development)
+	database?: string;
+	user?: string;
+	password?: string;
+	host?: string;
+	port?: number;
+	ssl?: boolean;
 }
 

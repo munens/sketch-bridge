@@ -4,6 +4,18 @@
 .specstory
 node_modules
 
+# Build outputs
+/app/dist
+/socket/dist
+/common/dist
+
+# Logs
+/socket/logs/*.log
+
+# Environment files
+.env
+.env.local
+.env.production
 
 /api/**/*.DS_Store
 /api/**/*.cursorindexingignore

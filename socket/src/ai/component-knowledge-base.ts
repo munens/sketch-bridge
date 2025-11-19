@@ -1,4 +1,4 @@
-import type { ComponentMetadata } from '../../../common/model';
+import type { ComponentMetadata } from '@sketch-bridge/common/model';
 
 /**
  * Extended component metadata for AI analysis

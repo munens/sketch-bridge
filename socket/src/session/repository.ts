@@ -4,7 +4,6 @@ import { Session, SessionRecord } from './types';
 import { logSocketError } from '../middleware';
 
 export class SessionRepository extends BaseRepository {
-	private readonly tableName = 'active_sessions';
 
 	constructor(knexClient: Knex) {
 		super(knexClient, 'active_sessions');

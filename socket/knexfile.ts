@@ -2,16 +2,32 @@ import { config as dotenvConfig } from 'dotenv';
 
 dotenvConfig();
 
+// Helper function to get database connection config
+// Supports both individual credentials and DATABASE_URL
+const getDatabaseConnection = () => {
+	// If DATABASE_URL is provided (Railway default), use it
+	if (process.env.DATABASE_URL) {
+		return {
+			connectionString: process.env.DATABASE_URL,
+			ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
+		};
+	}
+	
+	// Otherwise use individual credentials
+	return {
+		database: process.env.DATABASE_NAME,
+		user: process.env.DATABASE_USER,
+		password: process.env.DATABASE_PASSWORD,
+		port: Number(process.env.DATABASE_PORT),
+		host: process.env.DATABASE_HOST,
+		ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
+	};
+};
+
 const config = {
 	development: {
 		client: 'pg',
-		connection: {
-			database: process.env.DATABASE_NAME,
-			user: process.env.DATABASE_USER,
-			password: process.env.DATABASE_PASSWORD,
-			port: Number(process.env.DATABASE_PORT),
-			host: process.env.DATABASE_HOST
-		},
+		connection: getDatabaseConnection(),
 		pool: {
 			min: 0,
 			max: 7
@@ -29,37 +45,29 @@ const config = {
 
 	staging: {
 		client: 'pg',
-		connection: {
-			database: process.env.DATABASE_NAME,
-			user: process.env.DATABASE_USER,
-			password: process.env.DATABASE_PASSWORD,
-			port: Number(process.env.DATABASE_PORT),
-			host: process.env.DATABASE_HOST
-		},
+		connection: getDatabaseConnection(),
 		pool: {
 			min: 0,
 			max: 7
 		},
 		migrations: {
-			tableName: 'sketch_bridge_socket_knex_migrations_staging'
+			tableName: 'sketch_bridge_socket_knex_migrations_staging',
+			directory: 'db/migrations',
+			extension: 'ts'
 		}
 	},
 
 	production: {
 		client: 'pg',
-		connection: {
-			database: process.env.DATABASE_NAME,
-			user: process.env.DATABASE_USER,
-			password: process.env.DATABASE_PASSWORD,
-			port: Number(process.env.DATABASE_PORT),
-			host: process.env.DATABASE_HOST
-		},
+		connection: getDatabaseConnection(),
 		pool: {
-			min: 0,
-			max: 7
+			min: 2,
+			max: 10
 		},
 		migrations: {
-			tableName: 'sketch_bridge_socket_knex_migrations_prod'
+			tableName: 'sketch_bridge_socket_knex_migrations_prod',
+			directory: 'db/migrations',
+			extension: 'ts'
 		}
 	}
 

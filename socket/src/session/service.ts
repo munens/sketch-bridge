@@ -1,4 +1,4 @@
-import { BaseService } from '../model/base';
+import { BaseService } from '../model';
 import { SessionRepository } from './repository';
 import { Session } from './types';
 import { CANVAS_LIMITS } from '../constants';

@@ -166,7 +166,7 @@ export class CanvasRepository extends BaseRepository {
 			const result = await this.knexClient<CanvasObjectRecord>(this.objectsTableName)
 				.where({ canvas_id: canvasId })
 				.count('* as count')
-				.first();
+			.first() as { count?: string | number } | undefined;
 
 			return Number(result?.count || 0);
 		} catch (error) {

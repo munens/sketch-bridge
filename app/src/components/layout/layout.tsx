@@ -1,6 +1,10 @@
 import { ReactNode } from "react";
 
-const Layout = ({ children }: ReactNode) => {
+interface ILayoutProps {
+  children: ReactNode;
+}
+
+const Layout = ({ children }: ILayoutProps) => {
   const generalClasses = "ml-auto mr-auto grid grid-cols-4 gap-1";
   const smClasses = "sm:w-[64rem] sm:grid-cols-6";
   const mdClasses = "md:w-[76.8rem] md:grid-cols-8";

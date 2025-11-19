@@ -1,4 +1,4 @@
-import type { ComponentMetadata, AIAnalysisResult, AIAnalysisRequest } from '../../../common/model';
+import type { ComponentMetadata, AIAnalysisResult, AIAnalysisRequest } from '@sketch-bridge/common/model';
 
 // Re-export common types
 export type { AIAnalysisResult, AIAnalysisRequest };

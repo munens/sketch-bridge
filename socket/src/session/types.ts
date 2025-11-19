@@ -1,4 +1,4 @@
-export type { Session } from '../../../common/model';
+export type { Session } from '@sketch-bridge/common/model';
 
 export interface SessionRecord {
 	id: string;

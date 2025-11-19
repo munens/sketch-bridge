@@ -3,7 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:common": "cd common && npm install && npm run build",
+    "build:socket": "npm run build:common && cd socket && npm install && npm run build",
+    "build:app": "npm run build:common && cd app && npm install && npm run build",
+    "build:all": "npm run build:common && npm run build:socket && npm run build:app",
+    "clean": "rm -rf common/dist socket/dist app/dist",
+    "test-build": "./test-build.sh",
+    "dev:socket": "cd socket && npm run dev",
+    "dev:app": "cd app && npm run dev"
   },
   "workspaces": [
     "./app",
@@ -12,5 +20,5 @@
   ],
   "author": "Munene Kaumbutho",
   "license": "ISC",
-  "description": ""
+  "description": "Sketch Bridge - Collaborative canvas application with real-time synchronization"
 }

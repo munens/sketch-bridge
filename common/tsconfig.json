@@ -3,14 +3,22 @@
     "module": "ESNext",
     "esModuleInterop": true,
     "target": "ES2022",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
+    "rootDir": ".",
+    "declaration": true,
+    "declarationMap": true,
     "allowSyntheticDefaultImports": true,
-    "strict": false
+    "strict": false,
+    "skipLibCheck": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
-  "lib": ["ES2022"],
+  "include": ["model/**/*"],
   "exclude": [
-    "./scripts"
+    "./scripts",
+    "node_modules",
+    "dist"
   ]
 }

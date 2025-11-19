@@ -3,20 +3,28 @@
     "module": "ESNext",
     "esModuleInterop": true,
     "target": "ES2022",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
+    "rootDir": "src",
     "allowSyntheticDefaultImports": true,
     "strict": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "baseUrl": ".",
     "paths": {
-      "@sketch-bridge/common/model": ["../common/model/index.ts"],
-      "@sketch-bridge/common/*": ["../common/*"]
+    "@sketch-bridge/common": ["../common/dist/model/index"],
+    "@sketch-bridge/common/model": ["../common/dist/model/index"],
+      "@sketch-bridge/common/*": ["../common/dist/*"]
     }
   },
-  "lib": ["ES2022"],
+  "include": ["src/**/*"],
   "exclude": [
-    "./scripts"
+    "./scripts",
+    "node_modules",
+    "dist"
   ]
 }
 

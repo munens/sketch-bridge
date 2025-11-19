@@ -17,33 +17,40 @@ import { DatabaseConfig } from './database-config';
 config();
 
 try {
-const {
-	PORT,
-	DATABASE_NAME,
-	DATABASE_USER,
-	DATABASE_PASSWORD,
-	DATABASE_HOST,
-	DATABASE_PORT,
-	DATABASE_SSL,
-	CORS_ORIGIN
-} = process.env;
+	const {
+		PORT,
+		DATABASE_URL,
+		DATABASE_NAME,
+		DATABASE_USER,
+		DATABASE_PASSWORD,
+		DATABASE_HOST,
+		DATABASE_PORT,
+		DATABASE_SSL,
+		CORS_ORIGIN
+	} = process.env;
 
-const databaseConfig: DatabaseConfig = {
-	database: DATABASE_NAME,
-	user: DATABASE_USER,
-	password: DATABASE_PASSWORD,
-	host: DATABASE_HOST,
-	port: Number(DATABASE_PORT),
-	ssl: DATABASE_SSL === 'true'
-};
+	// Support both DATABASE_URL (Railway) and individual credentials (local)
+	const databaseConfig: DatabaseConfig = DATABASE_URL
+		? {
+			connectionString: DATABASE_URL,
+			ssl: DATABASE_SSL === 'true'
+	  }
+		: {
+			database: DATABASE_NAME,
+			user: DATABASE_USER,
+			password: DATABASE_PASSWORD,
+			host: DATABASE_HOST,
+			port: Number(DATABASE_PORT),
+			ssl: DATABASE_SSL === 'true'
+	  };
 
-const app = new SocketApplication(
-	PORT || '3001',
-	databaseConfig,
-	CORS_ORIGIN || 'http://localhost:5173'
-);
+	const app = new SocketApplication(
+		PORT || '3001',
+		databaseConfig,
+		CORS_ORIGIN || 'http://localhost:5173'
+	);
 
-app.init();
+	app.init();
 } catch (error) {
 	console.error('Failed to start server:', error);
 	if (error instanceof Error) {

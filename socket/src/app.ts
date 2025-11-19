@@ -35,19 +35,25 @@ export class SocketApplication {
 	}
 
 	private initDatabase(): void {
-		const { host, port, user, password, database, ssl } = this.databaseConfig;
-
 		logger.info('🗄️  Connecting to database...');
+		
+		// Support both connection string (Railway) and individual credentials (local)
+		const connection = this.databaseConfig.connectionString
+			? { 
+				connectionString: this.databaseConfig.connectionString,
+				ssl: this.databaseConfig.ssl ? { rejectUnauthorized: false } : false
+			} : {
+				host: this.databaseConfig.host,
+				port: this.databaseConfig.port,
+				user: this.databaseConfig.user,
+				password: this.databaseConfig.password,
+				database: this.databaseConfig.database,
+				ssl: this.databaseConfig.ssl ? { rejectUnauthorized: false } : false
+			};
+
 		this.knexClient = knex({
 			client: 'pg',
-			connection: {
-				host,
-				port,
-				user,
-				password,
-				database,
-				ssl
-			},
+			connection,
 			pool: {
 				min: 2,
 				max: 10
@@ -108,7 +114,7 @@ export class SocketApplication {
 
 		// Initialize canvas module with dependencies
 		const canvasModule = new CanvasModule();
-		canvasModule.init(this.knexClient, sessionModule.service, aiModule);
+		canvasModule.init(this.knexClient);
 
 		if (canvasModule.controller) {
 			canvasModule.controller.init(this.io);
@@ -122,7 +128,14 @@ export class SocketApplication {
 			logger.info('🚀 Socket server started successfully');
 			logger.info(`📡 Listening on port ${this.PORT}`);
 			logger.info(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
-			logger.info(`📦 Database: ${this.databaseConfig.database}@${this.databaseConfig.host}:${this.databaseConfig.port}`);
+			
+			// Log database connection info (hide sensitive data for connection strings)
+			if (this.databaseConfig.connectionString) {
+				logger.info('📦 Database: Connected via connection string');
+			} else {
+				logger.info(`📦 Database: ${this.databaseConfig.database}@${this.databaseConfig.host}:${this.databaseConfig.port}`);
+			}
+			
 			logger.info(`🔗 CORS Origin: ${this.corsOrigin}`);
 			process.stdout.write(`\n✅ SOCKET SERVER IS LISTENING ON PORT ${this.PORT}\n\n`);
 		});
@@ -135,10 +148,6 @@ export class SocketApplication {
 				process.exit(1);
 			}
 		});
-	}
-
-	getIO(): Server {
-		return this.io;
 	}
 }
 
