@@ -61,10 +61,13 @@ export class CanvasController extends BaseController {
 
 	private async handleJoinCanvas(
 		socket: Socket,
-		data: { canvasId: string; userId: string; userName: string }
+		data: { canvasId: string; userId: string; userName: string; canvasName?: string }
 	): Promise<void> {
 		try {
-			const { canvasId, userId, userName } = data;
+			const { canvasId, userId, userName, canvasName } = data;
+
+			// Ensure the canvas exists (create if it doesn't)
+			await this.service.getOrCreateCanvas(canvasId, userId, canvasName);
 
 			const session = await this.sessionService.createSession({
 				id: socket.id,
@@ -218,16 +221,21 @@ export class CanvasController extends BaseController {
 			const session = await this.sessionService.getSessionById(socket.id);
 			
 			if (session) {
+				await this.sessionService.deleteSession(socket.id);
+				
 				socket.to(session.canvasId).emit(SOCKET_EVENTS.USER_LEFT, {
 					sessionId: socket.id
 				});
 
-				await this.sessionService.deleteSession(socket.id);
+				logSocketEvent('Client disconnected and session cleaned up', { 
+					socketId: socket.id, 
+					userId: session.userId 
+				});
+			} else {
+				logSocketEvent('Client disconnected (no active session)', { socketId: socket.id });
 			}
-
-			logSocketEvent('Client disconnected', { socketId: socket.id });
 		} catch (error) {
-			logSocketError(error, { event: SOCKET_EVENTS.DISCONNECT });
+			logSocketError(error, { event: SOCKET_EVENTS.DISCONNECT, socketId: socket.id });
 		}
 	}
 

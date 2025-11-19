@@ -2,8 +2,13 @@ import { useRef, useEffect, useState } from 'react';
 import { useCanvas } from '../../context';
 import { useViewport, useDrawingTool } from '../../hooks';
 import { Point } from '../../types';
+import { throttle } from 'lodash';
 
-const CanvasRenderer = () => {
+interface CanvasRendererProps {
+  onCursorMove?: (x: number, y: number) => void;
+}
+
+const CanvasRenderer = ({ onCursorMove }: CanvasRendererProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -121,8 +126,19 @@ const CanvasRenderer = () => {
     }
   };
 
+  const throttledCursorMove = useRef(
+    throttle((x: number, y: number) => {
+      if (onCursorMove) {
+        onCursorMove(x, y);
+      }
+    }, 50)
+  ).current;
+
   const handleMouseMove = (e: React.MouseEvent) => {
     const screenPos = getMousePos(e);
+    const worldPos = screenToWorld(screenPos);
+
+    throttledCursorMove(worldPos.x, worldPos.y);
 
     if (isPanning && lastPanPoint && tool.type === 'pan') {
       const dx = screenPos.x - lastPanPoint.x;
@@ -130,7 +146,6 @@ const CanvasRenderer = () => {
       pan(dx, dy);
       setLastPanPoint(screenPos);
     } else if (drawingState.isDrawing) {
-      const worldPos = screenToWorld(screenPos);
       updateDrawing(worldPos);
     }
   };

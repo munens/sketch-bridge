@@ -43,6 +43,30 @@ export class CanvasService extends BaseService {
 		return canvas;
 	}
 
+	async getOrCreateCanvas(
+		canvasId: string,
+		userId: string,
+		canvasName?: string
+	): Promise<Canvas> {
+		try {
+			const canvas = await this.repository.getCanvasById(canvasId);
+			
+			if (canvas) {
+				return canvas;
+			}
+
+			// Canvas doesn't exist, create it
+			return await this.createCanvas(
+				canvasId,
+				canvasName || `Canvas ${canvasId.substring(0, 8)}`,
+				userId
+			);
+		} catch (error) {
+			logSocketError(error, { operation: 'getOrCreateCanvas', canvasId });
+			throw error;
+		}
+	}
+
 	async addObject(object: CanvasObject): Promise<CanvasObject> {
 		const count = await this.repository.getObjectCount(object.canvasId);
 		

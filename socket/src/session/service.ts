@@ -9,7 +9,21 @@ export class SessionService extends BaseService {
 
 	constructor(protected readonly repository: SessionRepository) {
 		super(repository);
+		this.cleanupStaleSessionsOnStartup();
 		this.startCleanupTask();
+	}
+
+	private cleanupStaleSessionsOnStartup(): void {
+		setTimeout(async () => {
+			try {
+				const deletedCount = await this.repository.deleteExpiredSessions(0);
+				if (deletedCount > 0) {
+					logSocketSuccess('Cleaned up stale sessions from previous server run', { count: deletedCount });
+				}
+			} catch (error) {
+				logSocketError(error, { operation: 'cleanupStaleSessionsOnStartup' });
+			}
+		}, 100);
 	}
 
 	async createSession(session: Session): Promise<Session> {

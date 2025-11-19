@@ -103,6 +103,12 @@ export class SessionRepository extends BaseRepository {
 
 	async deleteExpiredSessions(expirationTimeMs: number): Promise<number> {
 		try {
+			if (expirationTimeMs === 0) {
+				const deletedCount = await this.knexClient<SessionRecord>(this.tableName)
+					.delete();
+				return deletedCount;
+			}
+
 			const expirationDate = new Date(Date.now() - expirationTimeMs);
 
 			const deletedCount = await this.knexClient<SessionRecord>(this.tableName)
